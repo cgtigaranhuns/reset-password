@@ -34,5 +34,13 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'corporate_network' => [
+        'ranges' => explode(',', env('CORPORATE_IP_RANGES', '')),
+    ],
+
+    'ifpe_api' => [
+        'url' => env('IFPE_API_URL'),
+        'token' => env('IFPE_API_TOKEN'),
+        ],
 
 ];
