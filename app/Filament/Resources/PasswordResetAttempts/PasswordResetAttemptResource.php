@@ -26,9 +26,12 @@ class PasswordResetAttemptResource extends Resource
 {
     protected static ?string $model = PasswordResetAttempt::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static ?string $modelLabel = 'Tentativa de Reset';
-    protected static ?string $navigationLabel = 'Reset de Senha (Auditoria)';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
+    protected static string|BackedEnum|null $activeNavigationIcon = 'heroicon-s-shield-check';
+    protected static ?string $recordTitleAttribute = 'Tentativa de Recuperação de Senha';
+    protected static ?string $slug = 'reset-password';
+    protected static ?string $modelLabel = 'Tentativa de Recuperação de Senha';
+    protected static ?string $navigationLabel = 'Auditoria';
     
     // Recurso somente-leitura: sem create/edit/delete
     public static function canCreate(): bool
@@ -103,6 +106,9 @@ class PasswordResetAttemptResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->striped()
+            ->defaultPaginationPageOption(25)
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->orderBy('created_at', 'desc'))
             ->columns([
                 TextColumn::make('created_at')
                     ->label('Criado em')
@@ -112,22 +118,28 @@ class PasswordResetAttemptResource extends Resource
                 TextColumn::make('enrollment')
                     ->label('Matrícula')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('full_name')
                     ->label('Nome Completo')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('cpf_masked')
                     ->label('CPF')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('email_masked')
                     ->label('Email')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('enrollment_status')
                     ->label('Status da Matrícula')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('status')
                     ->label('Resultado')
                     ->badge()
+                    ->toggleable()
                     ->color(fn (string $state): string => match ($state) {
                         'success' => 'success',
                         'failed_rate_limited', 'failed_network' => 'warning',
@@ -147,7 +159,14 @@ class PasswordResetAttemptResource extends Resource
                     }),
                 TextColumn::make('ip_address')
                         ->label('IP')
-                        ->searchable(),
+                        ->searchable()
+                        ->toggleable(),
+                
+            ])
+            ->actions([
+                ViewAction::make()
+                    ->label('')
+                    ->tooltip('Visualizar'),
                 
             ])
             ->filters([
