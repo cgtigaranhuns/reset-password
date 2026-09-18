@@ -5,35 +5,46 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Support\Facades\Config;
 
 class Discente extends Model
 {
     protected $fillable = [
-        'enrollment_id', 'enrollment', 'campus_id', 'course_syllabus_id',
-        'enrollment_status', 'enrollment_status_code',
-        'period_status', 'period_status_code', 'current_period',
-        'full_name', 'email', 'cpf_encrypted', 'cpf_hash',
-        'shift', 'quota', 'synced_at',
+        'matricula', 'nome', 'email', 'telefone', 'data_nascimento',
+        'cpf_encrypted', 'cpf_hash', 'rg_encrypted',
+        'campus_id', 'curso_id', 'situacao', 'periodo', 'turno', 'synced_at',
     ];
 
     protected $casts = [
         'cpf_encrypted' => 'encrypted',
+        'rg_encrypted' => 'encrypted',
+        'data_nascimento' => 'date',
         'synced_at' => 'datetime',
     ];
 
-    protected $hidden = ['cpf_encrypted', 'cpf_hash'];
+    protected $hidden = ['cpf_encrypted', 'cpf_hash', 'rg_encrypted'];
 
     public const ALLOWED_STATUSES = ['Matriculado'];
 
+    public function campus()
+    {
+        return $this->belongsTo(Campus::class);
+    }
+
+    public function curso()
+    {
+        return $this->belongsTo(Curso::class);
+    }
+
     public function isEnrollmentActive(): bool
     {
-        return in_array($this->enrollment_status, self::ALLOWED_STATUSES, true);
+        return in_array($this->situacao, self::ALLOWED_STATUSES, true);
     }
 
     public function cpfMatches(string $cpfDigits): bool
     {
+        if (!$this->cpf_hash) {
+            return false;
+        }
         return hash_equals($this->cpf_hash, self::hashCpf($cpfDigits));
     }
 
@@ -42,8 +53,15 @@ class Discente extends Model
         return hash('sha256', $cpfDigits . config('app.key'));
     }
 
-    public function scopeByEnrollment($query, string $enrollment)
+    public function scopeByMatricula($query, string $matricula)
     {
-        return $query->where('enrollment', $enrollment);
+        return $query->where('matricula', $matricula);
+    }
+    public function birthDateMatches(string $dataNascimento): bool
+    {
+        if (!$this->data_nascimento) {
+            return false;
+        }
+        return $this->data_nascimento->format('Y-m-d') === $dataNascimento;
     }
 }

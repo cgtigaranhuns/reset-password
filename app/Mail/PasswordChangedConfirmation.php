@@ -17,10 +17,9 @@ class PasswordChangedConfirmation extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(
+        public string $fullName,
+    ) {}
 
     /**
      * Get the message envelope.
@@ -28,7 +27,7 @@ class PasswordChangedConfirmation extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Password Changed Confirmation',
+            subject: 'Senha alterada com sucesso',
         );
     }
 

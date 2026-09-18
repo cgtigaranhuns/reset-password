@@ -1,46 +1,42 @@
 <?php
 
-// app/Services/LdapPasswordService.php
-
 namespace App\Services;
 
-use LdapRecord\Models\ActiveDirectory\User as LdapUser;
-use LdapRecord\LdapRecordException;
 use Illuminate\Support\Facades\Log;
+use LdapRecord\LdapRecordException;
+use LdapRecord\Models\ActiveDirectory\User as LdapUser;
 
 class LdapPasswordService
 {
     /**
-     * @return string 'success' | 'not_found' | 'error'
+     * Altera a senha do usuário no Active Directory.
+     *
+     * @return string success|not_found|error
      */
-    public function resetPassword(string $samAccountName, string $newPassword): string
+    public function resetPassword(string $matricula, string $newPassword): string
     {
         try {
-            $user = LdapUser::findBy('samaccountname', $samAccountName);
+            $user = LdapUser::query()
+                ->where('samaccountname', '=', $matricula)
+                ->first();
 
             if (!$user) {
                 return 'not_found';
             }
 
-            $user->setUnicodePwd($newPassword);
-            $user->setPwdLastSet(0); // força troca no próximo login
+            $user->unicodepwd = $newPassword;
+            $user->pwdlastset = -1;
+            $user->save();
 
-            return $user->save() ? 'success' : 'error';
-        } catch (LdapRecordException $e) {
+            return 'success';
+
+        } catch (\Throwable $e) {
             Log::error('Erro ao alterar senha no AD', [
-                'sam_account_name' => $samAccountName,
-                'error' => $e->getMessage(), // nunca logar a senha nova aqui
+                'matricula' => $matricula,
+                'error' => $e->getMessage(),
             ]);
+
             return 'error';
         }
-    }
-
-    /**
-     * Deriva o samAccountName a partir do email institucional.
-     * Ajuste essa regra para a convenção real da sua instituição.
-     */
-    public function resolveSamAccountNameFromEmail(string $email): string
-    {
-        return strtolower(explode('@', $email)[0]);
     }
 }

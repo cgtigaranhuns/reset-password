@@ -1,11 +1,9 @@
 <?php
-// app/Http/Requests/PasswordRecovery/ConfirmResetPasswordRequest.php
-
 namespace App\Http\Requests\PasswordRecovery;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
-use NjoguAmos\Turnstile\Rules\TurnstileRule; // ← nome correto da classe
+use NjoguAmos\Turnstile\Rules\TurnstileRule;
 
 class ConfirmResetPasswordRequest extends FormRequest
 {
@@ -17,9 +15,11 @@ class ConfirmResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'enrollment' => ['required', 'string', 'max:50'],
+            'matricula' => ['required', 'string', 'max:50'],
 
             'cpf' => ['required', 'string', 'regex:/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/'],
+
+            'data_nascimento' => ['required', 'date_format:Y-m-d'],
 
             'password' => [
                 'required',
@@ -27,17 +27,19 @@ class ConfirmResetPasswordRequest extends FormRequest
                 Password::min(8)->mixedCase()->numbers()->symbols(),
             ],
 
-            'token' => ['required', new TurnstileRule()], // ← nome do campo também mudou
+            'cf-turnstile-response' => ['required', new TurnstileRule()],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'enrollment.required' => 'Informe sua matrícula.',
+            'matricula.required' => 'Informe sua matrícula.',
             'cpf.regex' => 'Informe um CPF válido.',
+            'data_nascimento.required' => 'Informe sua data de nascimento.',
+            'data_nascimento.date_format' => 'Data de nascimento inválida.',
             'password.confirmed' => 'A confirmação de senha não confere.',
-            'token.required' => 'Confirme que você não é um robô.',
+            'cf-turnstile-response.required' => 'Confirme que você não é um robô.',
         ];
     }
 

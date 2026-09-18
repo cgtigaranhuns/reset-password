@@ -45,10 +45,13 @@
             @csrf
 
             <label for="enrollment">Matrícula</label>
-            <input type="text" id="enrollment" name="enrollment" value="{{ old('enrollment') }}" required autofocus>
+            <input type="text" id="matricula" name="matricula" value="{{ old('enrollment') }}" required autofocus>
 
             <label for="cpf">CPF</label>
             <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
+            
+            <label for="data_nascimento">Data de nascimento</label>
+            <input type="date" id="data_nascimento" name="data_nascimento" value="{{ old('data_nascimento') }}" required>
 
             <label for="password">Nova senha</label>
             <input type="password" id="password" name="password" required>
@@ -57,7 +60,7 @@
             <label for="password_confirmation">Confirme a nova senha</label>
             <input type="password" id="password_confirmation" name="password_confirmation" required>
 
-            <div class="cf-turnstile" data-sitekey="{{ config('turnstile.sitekey') }}" style="margin-bottom: 1rem;"></div>
+            <div class="cf-turnstile" data-sitekey="{{ config('turnstile.sitekey') }}" style="margin-bottom: 1rem;"></div> 
 
             <button type="submit">Alterar senha</button>
         </form>

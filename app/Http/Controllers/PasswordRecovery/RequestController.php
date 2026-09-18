@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/PasswordRecovery/RequestController.php
-
 namespace App\Http\Controllers\PasswordRecovery;
 
 use App\Http\Controllers\Controller;
@@ -27,33 +25,33 @@ class RequestController extends Controller
 
     public function store(ConfirmResetPasswordRequest $request): RedirectResponse
     {
-        $enrollment = $request->input('enrollment');
+        $matricula = $request->input('matricula');
         $cpfDigits = $request->cpfDigits();
+        $dataNascimento = $request->input('data_nascimento');
 
         $log = [
-            'enrollment' => $enrollment,
+            'enrollment' => $matricula,
             'ip_address' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 255),
+            'cpf_masked' => PasswordResetAttempt::maskCpf($cpfDigits),
         ];
 
         $genericError = 'Não foi possível confirmar seus dados. Verifique as informações e tente novamente.';
 
-        $discente = Discente::byEnrollment($enrollment)->first();
+        $discente = Discente::byMatricula($matricula)->first();
 
         if (!$discente) {
             $this->logAttempt($log, status: 'failed_not_found');
-            return back()->withErrors(['enrollment' => $genericError]);
+            return back()->withErrors(['matricula' => $genericError]);
         }
 
-        $log['full_name'] = $discente->full_name;
-        $log['cpf_masked'] = PasswordResetAttempt::maskCpf($cpfDigits); // mascarar o que foi digitado, já que não decriptamos o da base
+        $log['full_name'] = $discente->nome;
         $log['email_masked'] = PasswordResetAttempt::maskEmail($discente->email ?? '');
-        $log['enrollment_status'] = $discente->enrollment_status;
-        $log['enrollment_status_code'] = $discente->enrollment_status_code;
+        $log['enrollment_status'] = $discente->situacao;
 
         if (!$discente->isEnrollmentActive()) {
             $this->logAttempt($log, status: 'failed_status_invalid');
-            return back()->withErrors(['enrollment' => $genericError]);
+            return back()->withErrors(['matricula' => $genericError]);
         }
 
         if (!$discente->cpfMatches($cpfDigits)) {
@@ -61,33 +59,40 @@ class RequestController extends Controller
             return back()->withErrors(['cpf' => $genericError]);
         }
 
-        if (!$discente->email) {
-            $this->logAttempt($log, status: 'failed_ldap_not_found', reason: 'sem email cadastrado');
-            return back()->withErrors(['enrollment' => $genericError]);
+        if (!$discente->birthDateMatches($dataNascimento)) {
+            $this->logAttempt($log, status: 'failed_birthdate_mismatch');
+            return back()->withErrors(['data_nascimento' => $genericError]);
         }
 
-        $samAccountName = $this->ldapService->resolveSamAccountNameFromEmail($discente->email);
-        $result = $this->ldapService->resetPassword($samAccountName, $request->input('password'));
+        if (!$discente->email) {
+            $this->logAttempt($log, status: 'failed_ldap_not_found', reason: 'sem email cadastrado');
+            return back()->withErrors(['matricula' => $genericError]);
+        }
+
+        //$samAccountName = $this->ldapService->resolveSamAccountNameFromEmail($discente->email);
+        $result = $this->ldapService->resetPassword($matricula, $request->input('password'));
 
         if ($result === 'not_found') {
             $this->logAttempt($log, status: 'failed_ldap_not_found');
-            return back()->withErrors(['enrollment' => $genericError]);
+            return back()->withErrors(['matricula' => $genericError]);
         }
 
         if ($result === 'error') {
             $this->logAttempt($log, status: 'failed_ldap_error');
-            return back()->withErrors(['enrollment' => 'Ocorreu um erro ao processar sua solicitação. Tente novamente ou contate o suporte de TI.']);
+            return back()->withErrors(['matricula' => 'Ocorreu um erro ao processar sua solicitação. Tente novamente ou contate o suporte de TI.']);
         }
 
         $this->logAttempt($log, status: 'success');
 
-        Mail::to($discente->email)->queue(
-            new PasswordChangedConfirmation(fullName: $discente->full_name)
+       Mail::to($discente->email)->queue(
+            new PasswordChangedConfirmation(
+                fullName: $discente->nome
+            )
         );
 
         return redirect()
             ->route('password-recovery.show')
-            ->with('success', 'Sua senha foi alterada com sucesso! Você já pode fazer login com a nova senha. Um email de confirmação foi enviado.');
+            ->with('success', 'Sua senha foi alterada com sucesso! Um email de confirmação foi enviado.');
     }
 
     private function logAttempt(array $data, string $status, ?string $reason = null): void

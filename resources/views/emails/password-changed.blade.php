@@ -1,12 +1,12 @@
 <x-mail::message>
-# Introduction
+# Senha alterada com sucesso
 
-The body of your message.
+Olá, {{ $fullName }}!
 
-<x-mail::button :url="''">
-Button Text
-</x-mail::button>
+Sua senha foi alterada com sucesso.
 
-Thanks,<br>
+Se você não realizou esta alteração, entre em contato imediatamente com o suporte de TI.
+
+Atenciosamente,<br>
 {{ config('app.name') }}
 </x-mail::message>
