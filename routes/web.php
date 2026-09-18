@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PasswordRecovery\RequestController;
 
+Route::redirect('/', '/reset-senha');
+
 Route::middleware('corporate.network')
     ->prefix('reset-senha')
     ->group(function () {
