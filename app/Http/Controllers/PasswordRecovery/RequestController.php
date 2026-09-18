@@ -7,8 +7,8 @@ namespace App\Http\Controllers\PasswordRecovery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PasswordRecovery\ConfirmResetPasswordRequest;
 use App\Mail\PasswordChangedConfirmation;
+use App\Models\Discente;
 use App\Models\PasswordResetAttempt;
-use App\Services\AcademicApiService;
 use App\Services\LdapPasswordService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
@@ -17,7 +17,6 @@ use Illuminate\View\View;
 class RequestController extends Controller
 {
     public function __construct(
-        private readonly AcademicApiService $academicApi,
         private readonly LdapPasswordService $ldapService,
     ) {}
 
@@ -37,39 +36,37 @@ class RequestController extends Controller
             'user_agent' => substr((string) $request->userAgent(), 0, 255),
         ];
 
-        // Mensagem genérica — nunca revelar qual etapa falhou (evita enumeração)
         $genericError = 'Não foi possível confirmar seus dados. Verifique as informações e tente novamente.';
 
-        $data = $this->academicApi->findByEnrollment($enrollment);
+        $discente = Discente::byEnrollment($enrollment)->first();
 
-        if (!$data) {
+        if (!$discente) {
             $this->logAttempt($log, status: 'failed_not_found');
             return back()->withErrors(['enrollment' => $genericError]);
         }
 
-        $log['full_name'] = $data['fullName'] ?? null;
-        $log['cpf_masked'] = PasswordResetAttempt::maskCpf($data['brCPF'] ?? '');
-        $log['email_masked'] = PasswordResetAttempt::maskEmail($data['email'] ?? '');
-        $log['enrollment_status'] = $data['enrollmentStatus'] ?? null;
-        $log['enrollment_status_code'] = $data['enrollmentStatusCode'] ?? null;
+        $log['full_name'] = $discente->full_name;
+        $log['cpf_masked'] = PasswordResetAttempt::maskCpf($cpfDigits); // mascarar o que foi digitado, já que não decriptamos o da base
+        $log['email_masked'] = PasswordResetAttempt::maskEmail($discente->email ?? '');
+        $log['enrollment_status'] = $discente->enrollment_status;
+        $log['enrollment_status_code'] = $discente->enrollment_status_code;
 
-        if (!$this->academicApi->isEnrollmentStatusValid($data)) {
+        if (!$discente->isEnrollmentActive()) {
             $this->logAttempt($log, status: 'failed_status_invalid');
             return back()->withErrors(['enrollment' => $genericError]);
         }
 
-        if (!$this->academicApi->cpfMatches($data, $cpfDigits)) {
+        if (!$discente->cpfMatches($cpfDigits)) {
             $this->logAttempt($log, status: 'failed_cpf_mismatch');
             return back()->withErrors(['cpf' => $genericError]);
         }
 
-        $email = $data['email'] ?? null;
-        if (!$email) {
-            $this->logAttempt($log, status: 'failed_ldap_not_found', reason: 'sem email cadastrado na API');
+        if (!$discente->email) {
+            $this->logAttempt($log, status: 'failed_ldap_not_found', reason: 'sem email cadastrado');
             return back()->withErrors(['enrollment' => $genericError]);
         }
 
-        $samAccountName = $this->ldapService->resolveSamAccountNameFromEmail($email);
+        $samAccountName = $this->ldapService->resolveSamAccountNameFromEmail($discente->email);
         $result = $this->ldapService->resetPassword($samAccountName, $request->input('password'));
 
         if ($result === 'not_found') {
@@ -84,8 +81,8 @@ class RequestController extends Controller
 
         $this->logAttempt($log, status: 'success');
 
-        Mail::to($email)->queue(
-            new PasswordChangedConfirmation(fullName: $data['fullName'] ?? '')
+        Mail::to($discente->email)->queue(
+            new PasswordChangedConfirmation(fullName: $discente->full_name)
         );
 
         return redirect()
