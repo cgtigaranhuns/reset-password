@@ -458,7 +458,7 @@
 
             <div class="form-actions">
                 <a
-                    href="http://login.labs.garanhuns.ifpe/"
+                    href="http://login.labs.garanhuns.intranet/"
                     class="btn btn-secondary"
                 >
                     Voltar para o login
