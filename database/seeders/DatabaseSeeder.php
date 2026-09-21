@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Administrador',
             'email' => 'cgti@garanhuns.ifpe.edu.br',
-            'password' => Hash::make('cgti123'),
+            'password' => bcrypt('cgti123'),
         ]);
     }
 }
