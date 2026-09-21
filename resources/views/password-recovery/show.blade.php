@@ -90,6 +90,25 @@
         button:hover {
             background: #2E8B57;
         }
+        .btn-secondary {
+            display: block; 
+            width: 100%; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 6px; 
+            background: #3CB371;
+            color: white; 
+            font-size: 16px; 
+            font-family: inherit; 
+            text-align: center; 
+            text-decoration: none; 
+            cursor: pointer; 
+            box-sizing: border-box; 
+        } 
+
+        .button-secondary:hover {
+            background: #2E8B57; 
+        }
 
         .alert-error {
             background: #fee2e2;
@@ -209,6 +228,11 @@
             <button type="submit">
                 Alterar senha
             </button>
+            <p></p>
+
+            <a href="http://login.labs.garanhuns.ifpe/" class="btn-secondary">
+                Voltar para o login
+            </a>
         </form>
 
     </div>
