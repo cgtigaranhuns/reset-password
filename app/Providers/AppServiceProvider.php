@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('password-reset', function (Request $request) {
         return [
-            Limit::perHour(5)->by($request->ip()),
+            //Limit::perHour(5)->by($request->ip()),
             Limit::perHour(5)->by($request->input('enrollment')),
         ];
     });
