@@ -1,4 +1,3 @@
-```blade
 {{-- resources/views/password-recovery/show.blade.php --}}
 <!DOCTYPE html>
 <html lang="pt-BR">
