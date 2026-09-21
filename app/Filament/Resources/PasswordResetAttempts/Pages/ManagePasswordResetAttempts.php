@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ManageRecords;
 class ManagePasswordResetAttempts extends ManageRecords
 {
     protected static string $resource = PasswordResetAttemptResource::class;
+    protected static ?string $title = 'Tentativas de recuperação de senha';
 
     protected function getHeaderActions(): array
     {
