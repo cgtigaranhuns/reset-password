@@ -21,6 +21,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Support\Enums\TextSize;
 
 class PasswordResetAttemptResource extends Resource
 {
@@ -115,38 +116,38 @@ class PasswordResetAttemptResource extends Resource
                     ->dateTime(format: 'd/m/Y H:i:s')
                     ->sortable()
                     ->toggleable()
-                    ->size(TextColumn\TextColumnSize::ExtraSmall),
+                    ->size(TextSize::ExtraSmall),
                 TextColumn::make('enrollment')
                     ->label('Matrícula')
                     ->sortable()
                     ->searchable()
                     ->toggleable()
-                    ->size(TextColumn\TextColumnSize::ExtraSmall),
+                    ->size(TextSize::ExtraSmall),
                 TextColumn::make('full_name')
                     ->label('Nome Completo')
                     ->searchable()
                     ->toggleable()
-                    ->size(TextColumn\TextColumnSize::ExtraSmall),
+                    ->size(TextSize::ExtraSmall),
                 TextColumn::make('cpf_masked')
                     ->label('CPF')
                     ->searchable()
                     ->toggleable()
-                    ->size(TextColumn\TextColumnSize::ExtraSmall),
+                    ->size(TextSize::ExtraSmall),
                 TextColumn::make('email_masked')
                     ->label('Email')
                     ->searchable()
                     ->toggleable()
-                    ->size(TextColumn\TextColumnSize::ExtraSmall),
+                    ->size(TextSize::ExtraSmall),
                 TextColumn::make('enrollment_status')
                     ->label('Status da Matrícula')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->size(TextColumn\TextColumnSize::ExtraSmall),
+                    ->size(TextSize::ExtraSmall),
                 TextColumn::make('status')
                     ->label('Resultado')
                     ->badge()
                     ->toggleable()
-                    ->size(TextColumn\TextColumnSize::ExtraSmall)
+                    ->size(TextSize::ExtraSmall)
                     ->color(fn (string $state): string => match ($state) {
                         'success' => 'success',
                         'failed_rate_limited', 'failed_network' => 'warning',
@@ -168,7 +169,7 @@ class PasswordResetAttemptResource extends Resource
                         ->label('IP')
                         ->searchable()
                         ->toggleable(isToggledHiddenByDefault: true)
-                        ->size(TextColumn\TextColumnSize::ExtraSmall),
+                        ->size(TextSize::ExtraSmall),
                 
             ])
             ->actions([
