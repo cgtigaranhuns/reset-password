@@ -114,32 +114,39 @@ class PasswordResetAttemptResource extends Resource
                     ->label('Criado em')
                     ->dateTime(format: 'd/m/Y H:i:s')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable()
+                    ->size(TextColumn\TextColumnSize::ExtraSmall),
                 TextColumn::make('enrollment')
                     ->label('Matrícula')
                     ->sortable()
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size(TextColumn\TextColumnSize::ExtraSmall),
                 TextColumn::make('full_name')
                     ->label('Nome Completo')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size(TextColumn\TextColumnSize::ExtraSmall),
                 TextColumn::make('cpf_masked')
                     ->label('CPF')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size(TextColumn\TextColumnSize::ExtraSmall),
                 TextColumn::make('email_masked')
                     ->label('Email')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size(TextColumn\TextColumnSize::ExtraSmall),
                 TextColumn::make('enrollment_status')
                     ->label('Status da Matrícula')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size(TextColumn\TextColumnSize::ExtraSmall),
                 TextColumn::make('status')
                     ->label('Resultado')
                     ->badge()
                     ->toggleable()
+                    ->size(TextColumn\TextColumnSize::ExtraSmall)
                     ->color(fn (string $state): string => match ($state) {
                         'success' => 'success',
                         'failed_rate_limited', 'failed_network' => 'warning',
@@ -160,7 +167,8 @@ class PasswordResetAttemptResource extends Resource
                 TextColumn::make('ip_address')
                         ->label('IP')
                         ->searchable()
-                        ->toggleable(),
+                        ->toggleable(isToggledHiddenByDefault: true)
+                        ->size(TextColumn\TextColumnSize::ExtraSmall),
                 
             ])
             ->actions([
